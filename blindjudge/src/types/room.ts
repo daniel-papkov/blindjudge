@@ -36,6 +36,5 @@ export interface RoomStatusResponse {
     }[];
     comparisonChatId?: string;
     finalVerdict?: string;
-    // Note: We don't include password for security reasons
   };
 }
