@@ -23,13 +23,19 @@ export interface Room {
 export interface RoomStatusResponse {
   success: boolean;
   status: {
+    id: string;
+    guidingQuestion: string;
+    created: Date;
     participantCount: number;
     conclusionCount: number;
-    roomStatus: Room["status"];
+    roomStatus: "active" | "comparing" | "completed";
     hasSubmitted: boolean;
     participants: {
       username: string;
       hasSubmitted: boolean;
     }[];
+    comparisonChatId?: string;
+    finalVerdict?: string;
+    // Note: We don't include password for security reasons
   };
 }

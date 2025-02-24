@@ -7,10 +7,9 @@ interface MessageBubbleProps {
 }
 
 const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
-  const isUser = message.sender === "user";
-
+  // Apply CSS class based on sender type (either "user" or "ai")
   return (
-    <div className={`message-container ${isUser ? "user" : "ai"}`}>
+    <div className={`message-container ${message.sender}`}>
       <div className="message-bubble">
         <div className="message-content">{message.content}</div>
         <div className="message-timestamp">
