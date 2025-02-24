@@ -1,5 +1,4 @@
-// src/components/chat/ChatInterface/ChatInterface.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Message } from "../../../types";
 import { chatService } from "../../../services/chatService";
@@ -12,18 +11,41 @@ const ChatInterface: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const roomData = location.state;
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
+  const [roomStatus, setRoomStatus] = useState<
+    "active" | "comparing" | "completed"
+  >("active");
+
+  // Scroll to the bottom of the messages
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   useEffect(() => {
     const initChat = async () => {
       if (!roomId) return;
 
       try {
+        // Get room status - this returns just the status part!
+        try {
+          const statusData = await chatService.getRoomStatus(roomId);
+          if (statusData && statusData.roomStatus) {
+            setRoomStatus(statusData.roomStatus);
+          }
+        } catch (error) {
+          console.error("Failed to get room status:", error);
+        }
+
         // Initialize chat
         const response = await chatService.initializeChat(roomId);
         if (response.success) {
@@ -59,6 +81,16 @@ const ChatInterface: React.FC = () => {
   const handleSendMessage = async (content: string) => {
     if (!roomId || !sessionId || isSending) return;
 
+    // Add user message to UI immediately for better UX
+    const tempMessage: Message = {
+      id: `temp-${Date.now()}`,
+      content,
+      sender: "user",
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, tempMessage]);
+
     try {
       setIsSending(true);
       const response = await chatService.sendMessage(
@@ -73,6 +105,9 @@ const ChatInterface: React.FC = () => {
     } catch (error) {
       console.error("Send message error:", error);
       setError("Failed to send message. Please try again.");
+
+      // Remove the temporary message on error
+      setMessages((prev) => prev.filter((msg) => msg.id !== tempMessage.id));
     } finally {
       setIsSending(false);
     }
@@ -104,22 +139,32 @@ const ChatInterface: React.FC = () => {
             <span className="creator-badge">Creator</span>
           )}
         </div>
+        <div className="room-status">
+          Status:{" "}
+          <span className={`status-badge ${roomStatus}`}>{roomStatus}</span>
+        </div>
       </div>
 
       <div className="chat-messages">
         {messages.map((message) => (
           <MessageBubble
-            key={`${message.id}-${message.timestamp}`}
+            key={`${message.id}-${message.timestamp.toString()}`}
             message={message}
           />
         ))}
+        <div ref={messagesEndRef} />
       </div>
 
       <div className="chat-input-container">
         <ChatInput
           onSendMessage={handleSendMessage}
-          disabled={isSending || !sessionId}
+          disabled={isSending || !sessionId || roomStatus !== "active"}
         />
+        {roomStatus !== "active" && (
+          <div className="room-closed-message">
+            This room is {roomStatus}. No new messages can be sent.
+          </div>
+        )}
       </div>
     </div>
   );

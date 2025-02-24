@@ -15,31 +15,58 @@
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .question-display {
-  margin-bottom: 1rem;
+  flex: 1;
 }
 
 .question-display h3 {
   margin: 0 0 0.5rem 0;
   color: #333;
+  font-size: 1.1rem;
 }
 
 .question-display p {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: #2c3e50;
+  font-weight: 500;
 }
 
-.creator-badge {
+.room-status {
+  padding-left: 1rem;
+  display: flex;
+  align-items: center;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.status-badge {
   display: inline-block;
-  background-color: #4caf50;
-  color: white;
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
-  margin-left: 1rem;
-  font-size: 0.875rem;
+  margin-left: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.status-badge.active {
+  background-color: #4caf50;
+  color: white;
+}
+
+.status-badge.closed {
+  background-color: #f44336;
+  color: white;
+}
+
+.status-badge.pending {
+  background-color: #ff9800;
+  color: white;
 }
 
 .chat-messages {
@@ -54,70 +81,12 @@
   flex-direction: column;
 }
 
-.message {
-  max-width: 70%;
-  margin: 0.5rem;
-  padding: 0.75rem;
-  border-radius: 1rem;
-  position: relative;
-}
-
-.message.user-message {
-  align-self: flex-end;
-  background-color: #e3f2fd;
-  color: #1565c0;
-  border-bottom-right-radius: 0.25rem;
-}
-
-.message.ai-message {
-  align-self: flex-start;
-  background-color: #2196f3;
-  color: white;
-  border-bottom-left-radius: 0.25rem;
-}
-
 .chat-input-container {
   background: white;
   padding: 1rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.chat-input-form {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.chat-input {
-  flex: 1;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-}
-
-.chat-input:focus {
-  outline: none;
-  border-color: #2196f3;
-}
-
-.send-button {
-  padding: 0.75rem 1.5rem;
-  background-color: #2196f3;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.send-button:hover {
-  background-color: #1976d2;
-}
-
-.send-button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
+  position: relative;
 }
 
 .chat-loading,
@@ -139,4 +108,11 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
+}
+
+.room-closed-message {
+  margin-top: 0.5rem;
+  color: #f44336;
+  font-size: 0.9rem;
+  text-align: center;
 }

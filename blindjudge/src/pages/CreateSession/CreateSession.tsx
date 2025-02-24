@@ -1,5 +1,4 @@
-// src/pages/CreateSession/CreateSession.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./CreateSession.css";
@@ -18,7 +17,14 @@ const CreateSession: React.FC = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if user is logged in
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,8 +78,40 @@ const CreateSession: React.FC = () => {
     }
   };
 
+  const handleLogin = () => {
+    navigate("/login");
+  };
+
+  const handleSignup = () => {
+    navigate("/signup");
+  };
+
+  const handleSignout = () => {
+    localStorage.removeItem("token");
+    setIsLoggedIn(false);
+    // Optional: Redirect to home or login page
+    navigate("/");
+  };
+
   return (
     <div className="create-session-container">
+      <div className="auth-buttons">
+        {isLoggedIn ? (
+          <button onClick={handleSignout} className="signout-button">
+            Sign Out
+          </button>
+        ) : (
+          <>
+            <button onClick={handleLogin} className="login-button">
+              Log In
+            </button>
+            <button onClick={handleSignup} className="signup-button">
+              Sign Up
+            </button>
+          </>
+        )}
+      </div>
+
       <h2>Create New Comparison Session</h2>
 
       {error && <div className="error-message">{error}</div>}
@@ -110,10 +148,20 @@ const CreateSession: React.FC = () => {
         <button
           type="submit"
           className="submit-button"
-          disabled={loading || !guidingQuestion.trim() || !password.trim()}
+          disabled={
+            loading ||
+            !guidingQuestion.trim() ||
+            !password.trim() ||
+            !isLoggedIn
+          }
         >
           {loading ? "Creating..." : "Create Session"}
         </button>
+        {!isLoggedIn && (
+          <p className="login-required-message">
+            You need to log in to create a session
+          </p>
+        )}
       </form>
     </div>
   );
