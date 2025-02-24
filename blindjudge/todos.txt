@@ -1,0 +1,7 @@
+todo :
+1. fix css of fucking chat
+2. properly show room status
+3. sumbit button
+4. join room button
+5. test comparison logic
+6. css for conclusions and other users using chat
