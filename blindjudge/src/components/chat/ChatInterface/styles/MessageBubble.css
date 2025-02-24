@@ -3,15 +3,16 @@
   display: flex;
   margin-bottom: 16px;
   max-width: 75%;
+  clear: both;
 }
 
-/* User messages on the right */
+/* Style based on sender type - "user" */
 .message-container.user {
   align-self: flex-end;
   margin-left: auto;
 }
 
-/* AI messages on the left */
+/* Style based on sender type - "ai" */
 .message-container.ai {
   align-self: flex-start;
   margin-right: auto;

@@ -6,6 +6,37 @@ import ChatInput from "./ChatInput";
 import MessageBubble from "./MessageBubble";
 import "./styles/ChatInterface.css";
 
+// Define a type for backend messages with 'role' instead of 'sender'
+interface BackendMessage {
+  id?: string;
+  _id?: string;
+  content: string;
+  role: "user" | "assistant";
+  timestamp: Date;
+}
+
+// Helper function to map role to sender
+const mapRoleToSender = (role: "user" | "assistant"): "user" | "ai" => {
+  if (role === "user") return "user";
+  return "ai"; // If role is "assistant", return "ai"
+};
+
+// Helper function to convert backend message to frontend message format
+const convertToMessage = (backendMsg: BackendMessage | Message): Message => {
+  // If it already has a sender property, it's likely already a Message
+  if ("sender" in backendMsg) {
+    return backendMsg as Message;
+  }
+
+  // Otherwise it's a BackendMessage, so convert it
+  return {
+    id: backendMsg.id || backendMsg._id || Date.now().toString(),
+    content: backendMsg.content,
+    sender: mapRoleToSender(backendMsg.role),
+    timestamp: backendMsg.timestamp,
+  };
+};
+
 const ChatInterface: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
   const location = useLocation();
@@ -21,6 +52,7 @@ const ChatInterface: React.FC = () => {
   const [roomStatus, setRoomStatus] = useState<
     "active" | "comparing" | "completed"
   >("active");
+  const [guidingQuestion, setGuidingQuestion] = useState<string>("");
 
   // Scroll to the bottom of the messages
   const scrollToBottom = () => {
@@ -36,11 +68,17 @@ const ChatInterface: React.FC = () => {
       if (!roomId) return;
 
       try {
-        // Get room status - this returns just the status part!
+        // Get room status
         try {
           const statusData = await chatService.getRoomStatus(roomId);
-          if (statusData && statusData.roomStatus) {
-            setRoomStatus(statusData.roomStatus);
+          if (statusData) {
+            if (statusData.roomStatus) {
+              setRoomStatus(statusData.roomStatus);
+            }
+
+            if (statusData.guidingQuestion) {
+              setGuidingQuestion(statusData.guidingQuestion);
+            }
           }
         } catch (error) {
           console.error("Failed to get room status:", error);
@@ -58,7 +96,12 @@ const ChatInterface: React.FC = () => {
               response.sessionId
             );
             if (history.success && history.messages) {
-              setMessages(history.messages);
+              // Map API messages to our frontend Message type
+              const mappedMessages = history.messages.map((msg) =>
+                convertToMessage(msg as BackendMessage | Message)
+              );
+
+              setMessages(mappedMessages);
             }
           } catch (error) {
             console.error("Failed to load chat history:", error);
@@ -100,7 +143,12 @@ const ChatInterface: React.FC = () => {
       );
 
       if (response.success && response.messages) {
-        setMessages(response.messages);
+        // Map API messages to our frontend Message type
+        const mappedMessages = response.messages.map((msg) =>
+          convertToMessage(msg as BackendMessage | Message)
+        );
+
+        setMessages(mappedMessages);
       }
     } catch (error) {
       console.error("Send message error:", error);
@@ -134,7 +182,11 @@ const ChatInterface: React.FC = () => {
       <div className="chat-header">
         <div className="question-display">
           <h3>Question</h3>
-          <p>{roomData?.guidingQuestion || "No question provided"}</p>
+          <p>
+            {guidingQuestion ||
+              roomData?.guidingQuestion ||
+              "No question provided"}
+          </p>
           {roomData?.isCreator && (
             <span className="creator-badge">Creator</span>
           )}
