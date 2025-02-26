@@ -66,6 +66,16 @@ export const authService = {
   isAuthenticated(): boolean {
     return !!this.getToken();
   },
+
+  getRedirectPath(): string {
+    // Get stored redirect path or default to home
+    const redirectPath = localStorage.getItem("redirectPath");
+    // Clear the stored path after retrieving it
+    if (redirectPath) {
+      localStorage.removeItem("redirectPath");
+    }
+    return redirectPath || "/";
+  },
 };
 
 // Add auth header to all requests if token exists
