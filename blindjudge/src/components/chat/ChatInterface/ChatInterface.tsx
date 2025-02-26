@@ -49,6 +49,8 @@ const ChatInterface: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
+  const [isSubmittingConclusion, setIsSubmittingConclusion] = useState(false);
+  const [conclusionSuccess, setConclusionSuccess] = useState(false);
   const [roomStatus, setRoomStatus] = useState<
     "active" | "comparing" | "completed"
   >("active");
@@ -161,6 +163,28 @@ const ChatInterface: React.FC = () => {
     }
   };
 
+  const handleSubmitConclusion = async () => {
+    if (!roomId || isSubmittingConclusion) return;
+
+    try {
+      setIsSubmittingConclusion(true);
+      setError(null);
+      const response = await chatService.submitConclusion(roomId);
+
+      if (response.success) {
+        setConclusionSuccess(true);
+        setRoomStatus("comparing");
+      } else {
+        setError("Failed to submit conclusion. Please try again.");
+      }
+    } catch (error) {
+      console.error("Submit conclusion error:", error);
+      setError("Failed to submit conclusion. Please try again.");
+    } finally {
+      setIsSubmittingConclusion(false);
+    }
+  };
+
   if (loading) {
     return <div className="chat-loading">Loading chat...</div>;
   }
@@ -206,6 +230,34 @@ const ChatInterface: React.FC = () => {
         ))}
         <div ref={messagesEndRef} />
       </div>
+
+      {/* Conclusion button area */}
+      {roomStatus === "active" && (
+        <div className="conclusion-container">
+          {conclusionSuccess ? (
+            <div className="conclusion-success-message">
+              Your conclusion has been submitted successfully!
+            </div>
+          ) : (
+            <>
+              {error && <div className="conclusion-error">{error}</div>}
+              <button
+                className="conclude-button"
+                onClick={handleSubmitConclusion}
+                disabled={isSubmittingConclusion}
+              >
+                {isSubmittingConclusion
+                  ? "Submitting conclusion..."
+                  : "Submit Conclusion"}
+              </button>
+              <p className="conclusion-hint">
+                Submitting your conclusion will end this chat session and move
+                to the comparison phase.
+              </p>
+            </>
+          )}
+        </div>
+      )}
 
       <div className="chat-input-container">
         <ChatInput
