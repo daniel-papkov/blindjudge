@@ -1,183 +1,195 @@
 // src/pages/JoinRoom/JoinRoom.tsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { chatService } from "../../services/api";
-import { ApiError } from "../../types/errors";
-// Import CSS if available
-// import './JoinRoom.css';
+import { joinRoom, getRoomStatus } from "../../services/roomService";
+import "./JoinRoom.css";
 
 const JoinRoom: React.FC = () => {
+  const [roomId, setRoomId] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
-  const [roomCode, setRoomCode] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [isJoining, setIsJoining] = useState(false);
-  const [needsPassword, setNeedsPassword] = useState(false);
-
-  const handleRoomCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setRoomCode(e.target.value);
-    setError(null);
+  const handleRoomIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setRoomId(e.target.value);
+    if (error) setError(null);
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
-    setError(null);
+    if (error) setError(null);
   };
 
-  const checkRoom = async () => {
-    if (!roomCode.trim()) {
-      setError("Please enter a room code");
-      return;
-    }
-
-    setIsJoining(true);
-    setError(null);
-
-    try {
-      // First, check if the room exists and if it requires a password
-      const response = await chatService.checkRoom(roomCode);
-
-      if (!response.exists) {
-        setError("Room not found. Please check the code and try again.");
-        setIsJoining(false);
-        return;
-      }
-
-      if (response.requiresPassword) {
-        setNeedsPassword(true);
-        setIsJoining(false);
-      } else {
-        // If no password needed, join directly
-        await joinRoom();
-      }
-    } catch (err) {
-      console.error("Error checking room:", err);
-      const apiError = err as ApiError;
-      setError(
-        apiError.response?.data?.message ||
-          apiError.message ||
-          "An error occurred while checking the room. Please try again."
-      );
-      setIsJoining(false);
-    }
-  };
-
-  const joinRoom = async () => {
-    if (!roomCode.trim()) {
-      setError("Please enter a room code");
-      return;
-    }
-
-    if (needsPassword && !password.trim()) {
-      setError("Please enter the room password");
-      return;
-    }
-
-    setIsJoining(true);
-    setError(null);
-
-    try {
-      const response = await chatService.joinRoom(
-        roomCode,
-        needsPassword ? password : undefined
-      );
-
-      if (response.success) {
-        // Navigate to the room
-        navigate(`/room/${response.roomId}`);
-      } else {
-        setError(response.message || "Failed to join room. Please try again.");
-      }
-    } catch (err) {
-      console.error("Error joining room:", err);
-      const apiError = err as ApiError;
-
-      if (apiError.response?.status === 403) {
-        setError("Incorrect password. Please try again.");
-      } else if (apiError.response?.status === 404) {
-        setError("Room not found. Please check the code and try again.");
-      } else {
-        setError(
-          apiError.response?.data?.message ||
-            apiError.message ||
-            "An error occurred while joining the room. Please try again."
-        );
-      }
-    } finally {
-      setIsJoining(false);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleJoinRoom = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (needsPassword) {
-      await joinRoom();
-    } else {
-      await checkRoom();
+    if (!roomId.trim()) {
+      setError("Room ID is required");
+      return;
     }
+
+    if (!password.trim()) {
+      setError("Password is required");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Step 1: Join the room
+      console.log(
+        `Attempting to join room ${roomId} with password ${password}`
+      );
+      const joinResponse = await joinRoom(roomId.trim(), password.trim());
+      console.log("Join room response:", joinResponse);
+
+      if (joinResponse.success) {
+        try {
+          // Step 2: Get room status to pass as state
+          console.log(`Getting room status for ${roomId}`);
+          const statusResponse = await getRoomStatus(roomId.trim());
+
+          if (statusResponse.success && statusResponse.status) {
+            // Step 3: Navigate with full room data
+            console.log(
+              `Successfully joined room ${roomId}, navigating with state`
+            );
+
+            navigate(`/room/${roomId}`, {
+              state: {
+                roomId: roomId,
+                guidingQuestion: statusResponse.status.guidingQuestion,
+                createdAt: statusResponse.status.created,
+                justJoined: true,
+              },
+            });
+          } else {
+            // Fall back to basic navigation if status fetch fails
+            console.log(
+              `Room status fetch failed, navigating with minimal state`
+            );
+            navigate(`/room/${roomId}`, {
+              state: {
+                roomId: roomId,
+                justJoined: true,
+              },
+            });
+          }
+        } catch (statusErr) {
+          // If status fetch fails, still navigate but with minimal info
+          console.error("Error fetching room status:", statusErr);
+          navigate(`/room/${roomId}`, {
+            state: {
+              roomId: roomId,
+              justJoined: true,
+            },
+          });
+        }
+      } else {
+        setError(
+          joinResponse.message || "Failed to join room. Please try again."
+        );
+      }
+    } catch (err) {
+      console.error("Join room error:", err);
+
+      // Type-safe error handling
+      let errorMessage = "An error occurred while joining the room.";
+      let statusCode: number | undefined;
+
+      if (typeof err === "object" && err !== null) {
+        if ("message" in err) {
+          errorMessage = String((err as { message: unknown }).message);
+        }
+        if ("status" in err) {
+          statusCode = Number((err as { status: unknown }).status);
+        }
+      }
+
+      if (statusCode === 404) {
+        setError("Room not found. Please check the room ID and try again.");
+      } else if (statusCode === 401) {
+        setError("Incorrect password. Please try again.");
+      } else if (statusCode === 403 && errorMessage.includes("full")) {
+        setError(
+          "This room is full. Please try another room or create your own."
+        );
+      } else if (
+        statusCode === 400 &&
+        errorMessage.includes("already in this room")
+      ) {
+        // If the user is already in the room, redirect them
+        console.log(`User is already in room ${roomId}, navigating`);
+        navigate(`/room/${roomId}`, {
+          state: {
+            roomId: roomId,
+            justJoined: true,
+          },
+        });
+      } else {
+        setError(errorMessage);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoBack = () => {
+    navigate("/");
   };
 
   return (
     <div className="join-room-container">
       <div className="join-room-card">
-        <h1>Join a Room</h1>
-        <p className="join-room-description">
-          Enter a room code to join an existing discussion.
-        </p>
+        <h2>Join Room</h2>
+        {error && <div className="error-message">{error}</div>}
 
-        <form onSubmit={handleSubmit} className="join-room-form">
+        <form onSubmit={handleJoinRoom}>
           <div className="form-group">
-            <label htmlFor="roomCode">Room Code</label>
+            <label htmlFor="roomId">Room ID</label>
             <input
               type="text"
-              id="roomCode"
-              value={roomCode}
-              onChange={handleRoomCodeChange}
-              placeholder="Enter room code"
-              disabled={isJoining || needsPassword}
-              autoFocus
+              id="roomId"
+              value={roomId}
+              onChange={handleRoomIdChange}
+              placeholder="Enter room ID"
+              disabled={isLoading}
+              required
             />
           </div>
 
-          {needsPassword && (
-            <div className="form-group">
-              <label htmlFor="password">Room Password</label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={handlePasswordChange}
-                placeholder="Enter room password"
-                disabled={isJoining}
-                autoFocus
-              />
-            </div>
-          )}
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={handlePasswordChange}
+              placeholder="Enter room password"
+              disabled={isLoading}
+              required
+            />
+          </div>
 
-          {error && <div className="error-message">{error}</div>}
-
-          <button type="submit" className="join-button" disabled={isJoining}>
-            {isJoining
-              ? "Joining..."
-              : needsPassword
-              ? "Join Room"
-              : "Continue"}
-          </button>
+          <div className="form-actions">
+            <button
+              type="button"
+              onClick={handleGoBack}
+              disabled={isLoading}
+              className="secondary-button"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="primary-button"
+            >
+              {isLoading ? "Joining..." : "Join Room"}
+            </button>
+          </div>
         </form>
-
-        <div className="back-link">
-          <a
-            href="/"
-            onClick={(e) => {
-              e.preventDefault();
-              navigate("/");
-            }}
-          >
-            Back to Home
-          </a>
-        </div>
       </div>
     </div>
   );

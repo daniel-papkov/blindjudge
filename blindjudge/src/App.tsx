@@ -8,6 +8,7 @@ import Login from "./pages/Auth/Login";
 import Signup from "./pages/Auth/Signup";
 import AuthGuard from "./components/auth/AuthGuard";
 import "./App.css";
+import JoinRoom from "./pages/JoinRoom/JoinRoom";
 
 const App: React.FC = () => {
   return (
@@ -39,7 +40,8 @@ const App: React.FC = () => {
           path="/join"
           element={
             <AuthGuard>
-              <div>Join Page (TODO)</div>
+              {/* <div>Join Page (TODO)</div> */}
+              <JoinRoom />
             </AuthGuard>
           }
         />

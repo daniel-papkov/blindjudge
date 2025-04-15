@@ -15,6 +15,12 @@ interface BackendMessage {
   timestamp: Date;
 }
 
+interface SubmitConclusionResponse {
+  success: boolean;
+  message?: string;
+  isComplete?: boolean;
+}
+
 // Helper function to map role to sender
 const mapRoleToSender = (role: "user" | "assistant"): "user" | "ai" => {
   if (role === "user") return "user";
@@ -169,11 +175,18 @@ const ChatInterface: React.FC = () => {
     try {
       setIsSubmittingConclusion(true);
       setError(null);
-      const response = await chatService.submitConclusion(roomId);
+      const response = (await chatService.submitConclusion(
+        roomId
+      )) as SubmitConclusionResponse;
 
       if (response.success) {
         setConclusionSuccess(true);
-        setRoomStatus("comparing");
+
+        // Only set status to comparing if the response indicates it's complete
+        if (response.isComplete) {
+          setRoomStatus("comparing");
+        }
+        // Otherwise keep the current status
       } else {
         setError("Failed to submit conclusion. Please try again.");
       }
