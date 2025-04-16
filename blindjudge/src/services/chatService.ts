@@ -85,4 +85,9 @@ export const chatService = {
     const response = await api.post(`/rooms/${roomId}/chat/conclude`);
     return response.data;
   },
+
+  async submitComparison(roomId: string): Promise<{ success: boolean }> {
+    const response = await api.post(`/ai/${roomId}/compare`);
+    return response.data;
+  },
 };

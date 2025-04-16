@@ -21,6 +21,43 @@ interface SubmitConclusionResponse {
   isComplete?: boolean;
 }
 
+interface ComparisonResult {
+  success: boolean;
+  comparison: string;
+  guidingQuestion: string;
+  conclusions: UserConclusion[];
+}
+
+interface UserConclusion {
+  userId: string;
+  username: string;
+  conclusion: string;
+  timestamp: string;
+  parentDiscussion: Discussion;
+}
+
+interface Discussion {
+  id: string;
+  guidingQuestion: string;
+  created: string;
+  participants: Participant[];
+  conclusions: ParticipantConclusion[];
+  status: "completed" | "in-progress" | string;
+  finalVerdict: string;
+}
+
+interface Participant {
+  userId: string;
+  username: string;
+  hasSubmitted: boolean;
+}
+
+interface ParticipantConclusion {
+  userId: string;
+  conclusion: string;
+  timestamp: string;
+}
+
 // Helper function to map role to sender
 const mapRoleToSender = (role: "user" | "assistant"): "user" | "ai" => {
   if (role === "user") return "user";
@@ -56,7 +93,11 @@ const ChatInterface: React.FC = () => {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
   const [isSubmittingConclusion, setIsSubmittingConclusion] = useState(false);
+  const [isSubmittingComparison, setIsSubmittingComparison] = useState(false);
   const [conclusionSuccess, setConclusionSuccess] = useState(false);
+  const [comparisonSuccess, setComparisonSuccess] = useState(false);
+  const [comparisonResult, setComparisonResult] =
+    useState<ComparisonResult | null>(null);
   const [roomStatus, setRoomStatus] = useState<
     "active" | "comparing" | "completed"
   >("active");
@@ -198,6 +239,31 @@ const ChatInterface: React.FC = () => {
     }
   };
 
+  const handleSubmitComparison = async () => {
+    if (!roomId || isSubmittingComparison) return;
+
+    try {
+      //setIsSubmittingConclusion(true);
+      setError(null);
+      const response = (await chatService.submitComparison(
+        roomId
+      )) as ComparisonResult;
+
+      if (response.success) {
+        setComparisonSuccess(true);
+        setRoomStatus("completed");
+        setComparisonResult(response);
+      } else {
+        setError("Failed to submit comparison. Please try again.");
+      }
+    } catch (error) {
+      console.error("Submit comparison error:", error);
+      setError("Failed to submit comparison. Please try again.");
+    } finally {
+      setIsSubmittingComparison(false);
+    }
+  };
+
   if (loading) {
     return <div className="chat-loading">Loading chat...</div>;
   }
@@ -243,7 +309,15 @@ const ChatInterface: React.FC = () => {
         ))}
         <div ref={messagesEndRef} />
       </div>
-
+      {comparisonSuccess && comparisonResult && (
+        <div className="comparison-result">
+          <h3>Final Verdict</h3>
+          <div className="comparison-details">
+            <strong>Comparison:</strong>
+            <p>{comparisonResult.comparison}</p>
+          </div>
+        </div>
+      )}
       {/* Conclusion button area */}
       {roomStatus === "active" && (
         <div className="conclusion-container">
@@ -270,6 +344,20 @@ const ChatInterface: React.FC = () => {
             </>
           )}
         </div>
+      )}
+
+      {roomStatus == "comparing" && (
+        <button
+          className="conclude-button"
+          onClick={handleSubmitComparison}
+          disabled={isSubmittingConclusion || isSubmittingComparison}
+        >
+          {isSubmittingComparison && !comparisonSuccess
+            ? "Submitting comparison..."
+            : comparisonSuccess
+            ? "Comparison complete!"
+            : "Submit comparison"}
+        </button>
       )}
 
       <div className="chat-input-container">

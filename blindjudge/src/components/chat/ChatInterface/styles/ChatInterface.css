@@ -184,3 +184,26 @@
   font-size: 0.7rem;
   vertical-align: middle;
 }
+
+.comparison-result {
+  background-color: #ffffff;
+  border-left: 4px solid #3b82f6; /* Blue accent */
+  padding: 1rem;
+  margin-top: 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.comparison-result h3 {
+  margin-top: 0;
+  color: #1e3a8a; /* Deep blue */
+}
+
+.comparison-result p {
+  color: #374151; /* Slate gray for readability */
+  margin: 0.5rem 0;
+}
+
+.comparison-details strong {
+  color: #1f2937; /* Darker gray for emphasis */
+}

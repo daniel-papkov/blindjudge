@@ -1,4 +1,5 @@
 todo :
+3.5 add a compare button
 4. check if 2 people submitted and if so then auto compare
 5. test comparison logic
 6. css for conclusions and other users using chat
