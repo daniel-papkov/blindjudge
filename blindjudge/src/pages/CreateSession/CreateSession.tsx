@@ -78,40 +78,8 @@ const CreateSession: React.FC = () => {
     }
   };
 
-  const handleLogin = () => {
-    navigate("/login");
-  };
-
-  const handleSignup = () => {
-    navigate("/signup");
-  };
-
-  const handleSignout = () => {
-    localStorage.removeItem("token");
-    setIsLoggedIn(false);
-    // Optional: Redirect to home or login page
-    navigate("/");
-  };
-
   return (
     <div className="create-session-container">
-      <div className="auth-buttons">
-        {isLoggedIn ? (
-          <button onClick={handleSignout} className="signout-button">
-            Sign Out
-          </button>
-        ) : (
-          <>
-            <button onClick={handleLogin} className="login-button">
-              Log In
-            </button>
-            <button onClick={handleSignup} className="signup-button">
-              Sign Up
-            </button>
-          </>
-        )}
-      </div>
-
       <h2>Create New Comparison Session</h2>
 
       {error && <div className="error-message">{error}</div>}

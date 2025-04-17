@@ -5,6 +5,7 @@ import { chatService } from "../../../services/chatService";
 import ChatInput from "./ChatInput";
 import MessageBubble from "./MessageBubble";
 import "./styles/ChatInterface.css";
+import LogoutButton from "../../common/LogoutButton";
 
 // Define a type for backend messages with 'role' instead of 'sender'
 interface BackendMessage {
@@ -311,9 +312,12 @@ const ChatInterface: React.FC = () => {
             <span className="creator-badge">Creator</span>
           )}
         </div>
-        <div className="room-status">
-          Status:{" "}
-          <span className={`status-badge ${roomStatus}`}>{roomStatus}</span>
+        <div className="chat-header-controls">
+          <div className="room-status">
+            Status:{" "}
+            <span className={`status-badge ${roomStatus}`}>{roomStatus}</span>
+          </div>
+          <LogoutButton variant="minimal" className="chat-logout-button" />
         </div>
       </div>
 

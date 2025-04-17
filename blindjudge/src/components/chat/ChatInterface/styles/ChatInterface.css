@@ -207,3 +207,61 @@
 .comparison-details strong {
   color: #1f2937; /* Darker gray for emphasis */
 }
+
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.chat-header-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.chat-logout-button {
+  margin-top: 5px;
+  font-size: 12px;
+}
+
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #f9f9f9;
+}
+
+.chat-header-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.question-display {
+  flex: 1;
+}
+
+.question-display h3 {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.chat-logout-button {
+  margin-top: 5px;
+  font-size: 12px;
+}
+
+.creator-badge {
+  display: inline-block;
+  background-color: #4caf50;
+  color: white;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 8px;
+}
