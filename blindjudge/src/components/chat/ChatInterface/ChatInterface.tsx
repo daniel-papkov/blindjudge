@@ -112,6 +112,7 @@ const ChatInterface: React.FC = () => {
     scrollToBottom();
   }, [messages]);
 
+  // Initialize the chat
   useEffect(() => {
     const initChat = async () => {
       if (!roomId) return;
@@ -133,33 +134,24 @@ const ChatInterface: React.FC = () => {
           console.error("Failed to get room status:", error);
         }
 
-        // Initialize chat
-        const response = await chatService.initializeChat(roomId);
-        if (response.success) {
-          setSessionId(response.sessionId);
-
-          // Get chat history
-          try {
-            const history = await chatService.getChatHistory(
-              roomId,
-              response.sessionId
-            );
-            if (history.success && history.messages) {
-              // Map API messages to our frontend Message type
-              const mappedMessages = history.messages.map((msg) =>
-                convertToMessage(msg as BackendMessage | Message)
-              );
-
-              setMessages(mappedMessages);
-            }
-          } catch (error) {
-            console.error("Failed to load chat history:", error);
-          }
-
-          setLoading(false);
+        // Initialize chat based on user role
+        let response;
+        if (roomData?.isCreator) {
+          console.log("User is creator, initializing chat");
+          response = await chatService.initializeChat(roomId);
         } else {
-          throw new Error("Chat initialization failed");
+          console.log("User is not creator, getting existing session ID");
+          response = await chatService.getSessionId(roomId);
         }
+
+        if (response.success) {
+          console.log("Session ID received:", response.sessionId);
+          setSessionId(response.sessionId);
+        } else {
+          throw new Error("Failed to get session ID");
+        }
+
+        setLoading(false);
       } catch (error) {
         console.error("Chat initialization error:", error);
         setError("Failed to initialize chat");
@@ -168,7 +160,32 @@ const ChatInterface: React.FC = () => {
     };
 
     initChat();
-  }, [roomId]);
+  }, [roomId, roomData?.isCreator]);
+
+  // Load chat history once sessionId is set
+  useEffect(() => {
+    const loadChatHistory = async () => {
+      if (!roomId || !sessionId) return;
+
+      try {
+        console.log("Loading chat history with session ID:", sessionId);
+        const history = await chatService.getChatHistory(roomId, sessionId);
+
+        if (history.success && history.messages) {
+          // Map API messages to our frontend Message type
+          const mappedMessages = history.messages.map((msg) =>
+            convertToMessage(msg as BackendMessage | Message)
+          );
+
+          setMessages(mappedMessages);
+        }
+      } catch (error) {
+        console.error("Failed to load chat history:", error);
+      }
+    };
+
+    loadChatHistory();
+  }, [roomId, sessionId]);
 
   const handleSendMessage = async (content: string) => {
     if (!roomId || !sessionId || isSending) return;
@@ -243,7 +260,7 @@ const ChatInterface: React.FC = () => {
     if (!roomId || isSubmittingComparison) return;
 
     try {
-      //setIsSubmittingConclusion(true);
+      setIsSubmittingComparison(true);
       setError(null);
       const response = (await chatService.submitComparison(
         roomId
@@ -346,7 +363,7 @@ const ChatInterface: React.FC = () => {
         </div>
       )}
 
-      {roomStatus == "comparing" && (
+      {roomStatus === "comparing" && (
         <button
           className="conclude-button"
           onClick={handleSubmitComparison}

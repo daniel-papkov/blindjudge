@@ -11,6 +11,13 @@ interface ChatInitResponse {
   message: string;
 }
 
+interface ChatSessionResponse {
+  success: boolean;
+  sessionId: string;
+  roomStatus: string;
+  guidingQuestion: string;
+}
+
 interface ChatResponse {
   success: boolean;
   messages: Message[];
@@ -47,6 +54,16 @@ export const chatService = {
       `/rooms/${roomId}/chat/init`
     );
     return response.data;
+  },
+
+  async getSessionId(roomId: string): Promise<ChatSessionResponse> {
+    try {
+      const response = await api.get(`/rooms/${roomId}/chat/session`);
+      return response.data;
+    } catch (error) {
+      console.error("Failed to get session ID:", error);
+      throw error;
+    }
   },
 
   async getChatHistory(
