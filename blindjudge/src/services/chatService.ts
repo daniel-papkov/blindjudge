@@ -1,92 +1,97 @@
 // src/services/chatService.ts
-import axios from "axios";
+import { apiService } from "./api";
 import { Message, RoomStatusResponse } from "../types";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-
-interface ChatInitResponse {
+export interface ChatInitResponse {
   success: boolean;
   sessionId: string;
   message: string;
 }
 
-interface ChatSessionResponse {
+export interface ChatSessionResponse {
   success: boolean;
   sessionId: string;
   roomStatus: string;
   guidingQuestion: string;
 }
 
-interface ChatResponse {
+export interface ChatResponse {
   success: boolean;
   messages: Message[];
 }
 
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+export interface ConclusionResponse {
+  success: boolean;
+  message?: string;
+}
 
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+export interface ComparisonResponse {
+  success: boolean;
+  comparison?: string;
+  guidingQuestion?: string;
+  conclusions?: Array<{
+    userId: string;
+    username: string;
+    conclusion: string;
+    timestamp: string;
+  }>;
+}
 
 export const chatService = {
+  /**
+   * Get the status of a room
+   */
   async getRoomStatus(roomId: string): Promise<RoomStatusResponse["status"]> {
-    const response = await api.get<RoomStatusResponse>(
+    const response = await apiService.get<RoomStatusResponse>(
       `/rooms/${roomId}/status`
     );
-    return response.data.status;
+    return response.status;
   },
 
+  /**
+   * Initialize a new chat session
+   */
   async initializeChat(roomId: string): Promise<ChatInitResponse> {
-    const response = await api.post<ChatInitResponse>(
-      `/rooms/${roomId}/chat/init`
-    );
-    return response.data;
+    return apiService.post<ChatInitResponse>(`/rooms/${roomId}/chat/init`, {});
   },
 
+  /**
+   * Get the session ID for an existing chat
+   */
   async getSessionId(roomId: string): Promise<ChatSessionResponse> {
     try {
-      const response = await api.get(`/rooms/${roomId}/chat/session`);
-      return response.data;
+      return apiService.get<ChatSessionResponse>(
+        `/rooms/${roomId}/chat/session`
+      );
     } catch (error) {
       console.error("Failed to get session ID:", error);
       throw error;
     }
   },
 
+  /**
+   * Get chat history for a specific session
+   */
   async getChatHistory(
     roomId: string,
     sessionId: string
   ): Promise<ChatResponse> {
-    const response = await api.get<ChatResponse>(
-      `/rooms/${roomId}/chat/history`,
-      {
-        headers: {
-          "Session-Id": sessionId,
-        },
-      }
-    );
-    return response.data;
+    return apiService.get<ChatResponse>(`/rooms/${roomId}/chat/history`, {
+      headers: {
+        "Session-Id": sessionId,
+      },
+    });
   },
 
+  /**
+   * Send a message in a chat session
+   */
   async sendMessage(
     roomId: string,
     message: string,
     sessionId: string
   ): Promise<ChatResponse> {
-    const response = await api.post<ChatResponse>(
+    return apiService.post<ChatResponse>(
       `/rooms/${roomId}/chat/message`,
       { message },
       {
@@ -95,16 +100,24 @@ export const chatService = {
         },
       }
     );
-    return response.data;
   },
 
-  async submitConclusion(roomId: string): Promise<{ success: boolean }> {
-    const response = await api.post(`/rooms/${roomId}/chat/conclude`);
-    return response.data;
+  /**
+   * Submit the conclusion for a discussion
+   */
+  async submitConclusion(roomId: string): Promise<ConclusionResponse> {
+    return apiService.post<ConclusionResponse>(
+      `/rooms/${roomId}/chat/conclude`,
+      {}
+    );
   },
 
-  async submitComparison(roomId: string): Promise<{ success: boolean }> {
-    const response = await api.post(`/ai/${roomId}/compare`);
-    return response.data;
+  /**
+   * Submit comparison between two discussions
+   */
+  async submitComparison(roomId: string): Promise<ComparisonResponse> {
+    return apiService.post<ComparisonResponse>(`/ai/${roomId}/compare`, {});
   },
 };
+
+export default chatService;

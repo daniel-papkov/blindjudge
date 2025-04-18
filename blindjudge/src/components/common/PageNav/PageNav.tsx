@@ -1,6 +1,8 @@
-import React from "react";
+// src/components/common/PageNav/PageNav.tsx
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
-import LogoutButton from "../../common/LogoutButton";
+import LogoutButton from "../LogoutButton";
+import { useAuth } from "../../../hooks/useAuth";
 import "./PageNav.css";
 
 interface PageNavProps {
@@ -8,9 +10,26 @@ interface PageNavProps {
 }
 
 const PageNav: React.FC<PageNavProps> = () => {
+  // Get user information from auth context
+  const {
+    state: { user, isAuthenticated },
+  } = useAuth();
+
   const [isDarkMode, setIsDarkMode] = React.useState(() =>
     document.documentElement.classList.contains("dark-mode")
   );
+
+  // Set up theme based on localStorage on component mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark" && !isDarkMode) {
+      document.documentElement.classList.add("dark-mode");
+      setIsDarkMode(true);
+    } else if (savedTheme === "light" && isDarkMode) {
+      document.documentElement.classList.remove("dark-mode");
+      setIsDarkMode(false);
+    }
+  }, [isDarkMode]);
 
   const toggleDarkMode = () => {
     const dark = document.documentElement.classList.toggle("dark-mode");
@@ -36,6 +55,13 @@ const PageNav: React.FC<PageNavProps> = () => {
           </nav>
         </div>
         <div className="page-nav-right">
+          {isAuthenticated && user && (
+            <div className="user-info">
+              <span className="welcome-text">
+                Hello, {user.username || user.email}
+              </span>
+            </div>
+          )}
           <button
             onClick={toggleDarkMode}
             className="theme-toggle-button"

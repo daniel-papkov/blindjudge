@@ -1,3 +1,3 @@
-export * from "./auth";
-export * from "./chat";
-export * from "./room";
+export * from "./auth.types";
+export * from "./chat.types";
+export * from "./room.types";

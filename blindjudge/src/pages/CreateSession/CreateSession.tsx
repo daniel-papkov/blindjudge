@@ -1,30 +1,28 @@
+// src/pages/CreateSession/CreateSession.tsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { createRoom } from "../../services/roomService";
+import { useAuth } from "../../hooks/useAuth";
 import "./CreateSession.css";
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-
-interface RoomResponse {
-  success: boolean;
-  roomId: string;
-  message: string;
-}
 
 const CreateSession: React.FC = () => {
   const [guidingQuestion, setGuidingQuestion] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
 
+  // Get authentication state
+  const {
+    state: { isAuthenticated, user },
+  } = useAuth();
+
+  // Ensure user is authenticated
   useEffect(() => {
-    // Check if user is logged in
-    const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
-  }, []);
+    if (!isAuthenticated) {
+      navigate("/login");
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,46 +32,37 @@ const CreateSession: React.FC = () => {
     setError(null);
 
     try {
-      const token = localStorage.getItem("token");
-      const response = await axios.post<RoomResponse>(
-        `${API_BASE_URL}/rooms`,
-        {
-          guidingQuestion,
-          password,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      // Use the createRoom function from our refactored roomService
+      const response = await createRoom(guidingQuestion, password);
 
-      console.log("Room creation response:", response.data); // Debug log
+      console.log("Room creation response:", response); // Debug log
 
-      if (response.data.success && response.data.roomId) {
-        console.log("Navigating to room:", response.data.roomId); // Debug log
+      if (response.success && response.roomId) {
+        console.log("Navigating to room:", response.roomId); // Debug log
 
-        navigate(`/room/${response.data.roomId}`, {
+        navigate(`/room/${response.roomId}`, {
           state: {
-            roomId: response.data.roomId,
-            question: guidingQuestion,
+            roomId: response.roomId,
+            guidingQuestion: guidingQuestion,
             createdAt: new Date().toISOString(),
             isCreator: true,
             role: "creator", // Keep this for backward compatibility
+            username: user?.username || user?.email,
           },
         });
       } else {
-        setError(response.data.message || "Failed to create room");
+        setError(response.message || "Failed to create room");
         setLoading(false);
       }
     } catch (err) {
       console.error("Room creation error:", err);
-      if (axios.isAxiosError(err) && err.response?.data?.message) {
-        setError(err.response.data.message);
+
+      if (err instanceof Error) {
+        setError(err.message || "Failed to create room");
       } else {
         setError("Failed to create room");
       }
+
       setLoading(false);
     }
   };
@@ -120,12 +109,12 @@ const CreateSession: React.FC = () => {
             loading ||
             !guidingQuestion.trim() ||
             !password.trim() ||
-            !isLoggedIn
+            !isAuthenticated
           }
         >
           {loading ? "Creating..." : "Create Session"}
         </button>
-        {!isLoggedIn && (
+        {!isAuthenticated && (
           <p className="login-required-message">
             You need to log in to create a session
           </p>

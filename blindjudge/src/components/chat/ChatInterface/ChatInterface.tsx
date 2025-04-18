@@ -1,11 +1,13 @@
+// src/components/chat/ChatInterface/ChatInterface.tsx
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Message } from "../../../types";
 import { chatService } from "../../../services/chatService";
+import { useAuth } from "../../../hooks/useAuth";
 import ChatInput from "./ChatInput";
 import MessageBubble from "./MessageBubble";
-import "./styles/ChatInterface.css";
 import LogoutButton from "../../common/LogoutButton";
+import "./styles/ChatInterface.css";
 
 // Define a type for backend messages with 'role' instead of 'sender'
 interface BackendMessage {
@@ -14,12 +16,6 @@ interface BackendMessage {
   content: string;
   role: "user" | "assistant";
   timestamp: Date;
-}
-
-interface SubmitConclusionResponse {
-  success: boolean;
-  message?: string;
-  isComplete?: boolean;
 }
 
 interface ComparisonResult {
@@ -88,6 +84,11 @@ const ChatInterface: React.FC = () => {
   const roomData = location.state;
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Use auth context to get user info
+  const {
+    state: { user },
+  } = useAuth();
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -116,7 +117,11 @@ const ChatInterface: React.FC = () => {
   // Initialize the chat
   useEffect(() => {
     const initChat = async () => {
-      if (!roomId) return;
+      if (!roomId) {
+        setError("Room ID is required");
+        setLoading(false);
+        return;
+      }
 
       try {
         // Get room status
@@ -234,15 +239,13 @@ const ChatInterface: React.FC = () => {
     try {
       setIsSubmittingConclusion(true);
       setError(null);
-      const response = (await chatService.submitConclusion(
-        roomId
-      )) as SubmitConclusionResponse;
+      const response = await chatService.submitConclusion(roomId);
 
       if (response.success) {
         setConclusionSuccess(true);
 
         // Only set status to comparing if the response indicates it's complete
-        if (response.isComplete) {
+        if (response.success) {
           setRoomStatus("comparing");
         }
         // Otherwise keep the current status
@@ -263,14 +266,12 @@ const ChatInterface: React.FC = () => {
     try {
       setIsSubmittingComparison(true);
       setError(null);
-      const response = (await chatService.submitComparison(
-        roomId
-      )) as ComparisonResult;
+      const response = await chatService.submitComparison(roomId);
 
       if (response.success) {
         setComparisonSuccess(true);
         setRoomStatus("completed");
-        setComparisonResult(response);
+        setComparisonResult(response as ComparisonResult);
       } else {
         setError("Failed to submit comparison. Please try again.");
       }
@@ -317,6 +318,11 @@ const ChatInterface: React.FC = () => {
             Status:{" "}
             <span className={`status-badge ${roomStatus}`}>{roomStatus}</span>
           </div>
+          {user && (
+            <div className="user-info">
+              <span className="user-name">{user.username || user.email}</span>
+            </div>
+          )}
           <LogoutButton variant="minimal" className="chat-logout-button" />
         </div>
       </div>

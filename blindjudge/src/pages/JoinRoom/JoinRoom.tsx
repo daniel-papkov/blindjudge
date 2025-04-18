@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { joinRoom, getRoomStatus } from "../../services/roomService";
+import { useAuth } from "../../hooks/useAuth";
 import "./JoinRoom.css";
 
 const JoinRoom: React.FC = () => {
@@ -10,6 +11,9 @@ const JoinRoom: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const navigate = useNavigate();
+  const {
+    state: { user },
+  } = useAuth();
 
   const handleRoomIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setRoomId(e.target.value);
@@ -62,6 +66,7 @@ const JoinRoom: React.FC = () => {
                 guidingQuestion: statusResponse.status.guidingQuestion,
                 createdAt: statusResponse.status.created,
                 justJoined: true,
+                username: user?.username || user?.email,
               },
             });
           } else {
@@ -99,11 +104,12 @@ const JoinRoom: React.FC = () => {
       let statusCode: number | undefined;
 
       if (typeof err === "object" && err !== null) {
-        if ("message" in err) {
-          errorMessage = String((err as { message: unknown }).message);
+        const errorObj = err as { message?: string; status?: number };
+        if (errorObj.message) {
+          errorMessage = String(errorObj.message);
         }
-        if ("status" in err) {
-          statusCode = Number((err as { status: unknown }).status);
+        if (errorObj.status) {
+          statusCode = Number(errorObj.status);
         }
       }
 
