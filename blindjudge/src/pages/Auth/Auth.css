@@ -1,32 +1,76 @@
 /* src/pages/Auth/Auth.css */
+
 .auth-container {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
   padding: 20px;
-  background-color: #f5f5f5;
+  background-color: var(--color-bg);
+  transition: background-color 0.3s ease;
 }
 
-.auth-box {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.auth-box,
+.auth-card {
+  background: var(--color-bg-card);
+  padding: 2.5rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px var(--color-shadow);
   width: 100%;
-  max-width: 400px;
+  max-width: 450px;
+  border: 1px solid var(--color-border);
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.5s ease;
 }
 
-.auth-box h2 {
+.auth-box::before,
+.auth-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(
+    90deg,
+    var(--color-primary),
+    var(--color-primary-dark)
+  );
+  opacity: 0.8;
+}
+
+.auth-box h2,
+.auth-card h1 {
   text-align: center;
-  margin-bottom: 1.5rem;
-  color: #333;
+  margin-bottom: 1.8rem;
+  color: var(--color-text);
+  position: relative;
+  padding-bottom: 12px;
+  font-size: 28px;
+}
+
+.auth-box h2::after,
+.auth-card h1::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--color-primary),
+    var(--color-primary-dark)
+  );
+  border-radius: 3px;
 }
 
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.2rem;
 }
 
 .form-group {
@@ -36,64 +80,195 @@
 }
 
 .form-group label {
-  font-weight: 500;
-  color: #555;
+  font-weight: 600;
+  color: var(--color-text);
+  font-size: 15px;
 }
 
 .form-group input {
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-  transition: border-color 0.2s;
+  padding: 14px 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  font-size: 15px;
+  background-color: var(--color-bg-card);
+  color: var(--color-text);
+  transition: all 0.3s ease;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .form-group input:focus {
-  border-color: #4a90e2;
   outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(99, 179, 237, 0.2),
+    inset 0 1px 3px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+}
+
+.form-group input::placeholder {
+  color: var(--color-subtext);
+  opacity: 0.7;
 }
 
 .auth-button {
-  background-color: #4a90e2;
+  display: inline-block;
+  padding: 14px 28px;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-primary-dark)
+  );
   color: white;
-  padding: 0.75rem;
   border: none;
-  border-radius: 4px;
-  font-size: 1rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 16px;
   cursor: pointer;
-  transition: background-color 0.2s;
-  margin-top: 1rem;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(49, 130, 206, 0.3);
+  margin-top: 1.5rem;
 }
 
-.auth-button:hover {
-  background-color: #357abd;
+.auth-button:hover:not(:disabled) {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-dark),
+    var(--color-primary)
+  );
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(49, 130, 206, 0.4);
 }
 
 .auth-button:disabled {
-  background-color: #ccc;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
 .auth-error {
-  background-color: #ffebee;
-  color: #d32f2f;
-  padding: 0.75rem;
-  border-radius: 4px;
-  margin-bottom: 1rem;
-  text-align: center;
+  background-color: rgba(229, 62, 62, 0.1);
+  color: var(--color-error);
+  padding: 14px 18px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  font-size: 15px;
+  border-left: 4px solid var(--color-error);
+  display: flex;
+  align-items: center;
+}
+
+.auth-error::before {
+  content: "⚠️";
+  margin-right: 10px;
+  font-size: 16px;
 }
 
 .auth-links {
-  margin-top: 1.5rem;
+  margin-top: 2rem;
   text-align: center;
+  color: var(--color-subtext);
+  font-size: 15px;
 }
 
-.auth-link {
-  color: #4a90e2;
+.auth-link,
+.auth-links a {
+  color: var(--color-primary);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
+  transition: color 0.3s ease;
+  position: relative;
 }
 
-.auth-link:hover {
-  text-decoration: underline;
+.auth-link::after,
+.auth-links a::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -2px;
+  left: 0;
+  background: var(--color-primary);
+  transition: width 0.3s ease;
+}
+
+.auth-link:hover,
+.auth-links a:hover {
+  color: var(--color-primary-dark);
+}
+
+.auth-link:hover::after,
+.auth-links a:hover::after {
+  width: 100%;
+}
+
+/* Password visibility toggle could be added */
+.password-toggle {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--color-subtext);
+}
+
+/* Social login buttons if needed */
+.social-login {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+  justify-content: center;
+}
+
+.social-login-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: var(--color-bg-card);
+}
+
+.social-login-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 10px var(--color-shadow);
+}
+
+/* Animation */
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .auth-box,
+  .auth-card {
+    padding: 2rem 1.5rem;
+  }
+
+  .auth-box h2,
+  .auth-card h1 {
+    font-size: 24px;
+  }
+
+  .form-group input,
+  .auth-button {
+    font-size: 14px;
+    padding: 12px 16px;
+  }
 }

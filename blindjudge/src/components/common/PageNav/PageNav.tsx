@@ -1,4 +1,3 @@
-// src/components/common/PageNav/PageNav.tsx
 import React from "react";
 import { Link } from "react-router-dom";
 import LogoutButton from "../../common/LogoutButton";
@@ -8,15 +7,21 @@ interface PageNavProps {
   title?: string;
 }
 
-const PageNav: React.FC<PageNavProps> = ({ title = "Blind Judge" }) => {
+const PageNav: React.FC<PageNavProps> = () => {
+  const [isDarkMode, setIsDarkMode] = React.useState(() =>
+    document.documentElement.classList.contains("dark-mode")
+  );
+
+  const toggleDarkMode = () => {
+    const dark = document.documentElement.classList.toggle("dark-mode");
+    setIsDarkMode(dark);
+    // Save preference to localStorage
+    localStorage.setItem("theme", dark ? "dark" : "light");
+  };
+
   return (
     <header className="page-nav">
       <div className="page-nav-container">
-        <div className="page-nav-left">
-          <Link to="/" className="app-logo">
-            {title}
-          </Link>
-        </div>
         <div className="page-nav-center">
           <nav className="nav-links">
             <Link to="/" className="nav-link">
@@ -31,6 +36,14 @@ const PageNav: React.FC<PageNavProps> = ({ title = "Blind Judge" }) => {
           </nav>
         </div>
         <div className="page-nav-right">
+          <button
+            onClick={toggleDarkMode}
+            className="theme-toggle-button"
+            aria-label="Toggle Theme"
+          >
+            <span className={`icon sun ${isDarkMode ? "hide" : ""}`}>☀️</span>
+            <span className={`icon moon ${!isDarkMode ? "hide" : ""}`}>🌙</span>
+          </button>
           <LogoutButton variant="secondary" />
         </div>
       </div>

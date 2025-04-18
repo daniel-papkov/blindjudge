@@ -10,6 +10,7 @@ import AuthGuard from "./components/auth/AuthGuard";
 import JoinRoom from "./pages/JoinRoom/JoinRoom";
 import PageNav from "./components/common/PageNav/PageNav";
 import "./App.css";
+import "./styles/global.css";
 
 const App: React.FC = () => {
   return (
