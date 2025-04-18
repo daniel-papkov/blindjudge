@@ -11,6 +11,13 @@ interface ChatInitResponse {
   message: string;
 }
 
+interface ChatSessionResponse {
+  success: boolean;
+  sessionId: string;
+  roomStatus: string;
+  guidingQuestion: string;
+}
+
 interface ChatResponse {
   success: boolean;
   messages: Message[];
@@ -49,6 +56,16 @@ export const chatService = {
     return response.data;
   },
 
+  async getSessionId(roomId: string): Promise<ChatSessionResponse> {
+    try {
+      const response = await api.get(`/rooms/${roomId}/chat/session`);
+      return response.data;
+    } catch (error) {
+      console.error("Failed to get session ID:", error);
+      throw error;
+    }
+  },
+
   async getChatHistory(
     roomId: string,
     sessionId: string
@@ -83,6 +100,11 @@ export const chatService = {
 
   async submitConclusion(roomId: string): Promise<{ success: boolean }> {
     const response = await api.post(`/rooms/${roomId}/chat/conclude`);
+    return response.data;
+  },
+
+  async submitComparison(roomId: string): Promise<{ success: boolean }> {
+    const response = await api.post(`/ai/${roomId}/compare`);
     return response.data;
   },
 };

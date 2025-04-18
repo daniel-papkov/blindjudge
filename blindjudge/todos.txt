@@ -1,9 +1,6 @@
 todo :
-4. check if 2 people submitted and if so then auto compare
-5. test comparison logic
-6. css for conclusions and other users using chat
-
+6. css 
 
 issues:
-1. when a user starts talking with gpt, it has not context, fix in backend
-2. sprinkle logout button everywhere
+1. break things into smaller components (frontend)
+2. break things into smaller components (backend)

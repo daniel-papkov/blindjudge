@@ -1,0 +1,87 @@
+/* src/components/common/styles/AppHeader.css */
+.app-header {
+  background-color: var(--color-bg-card);
+  box-shadow: 0 2px 8px var(--color-shadow);
+  padding: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.app-header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  height: 60px;
+}
+
+.app-header-left {
+  display: flex;
+  align-items: center;
+}
+
+.app-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.app-logo {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.app-logo:hover {
+  color: var(--color-primary);
+}
+
+.app-nav {
+  display: flex;
+  gap: 16px;
+}
+
+.nav-link {
+  color: var(--color-subtext);
+  text-decoration: none;
+  font-size: 14px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+  background-color: var(--color-message-user);
+  color: var(--color-text);
+}
+
+.nav-link.active {
+  color: var(--color-primary);
+  background-color: var(--color-message-user);
+}
+
+@media (max-width: 600px) {
+  .app-header-container {
+    flex-direction: column;
+    height: auto;
+    padding: 12px 16px;
+  }
+
+  .app-header-left,
+  .app-header-right {
+    width: 100%;
+    justify-content: center;
+    margin: 6px 0;
+  }
+
+  .app-nav {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

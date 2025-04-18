@@ -1,49 +1,260 @@
-/* Add this to your existing CreateSession.css file */
+/* src/components/CreateSession.css */
+
+.create-session-container {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 0 20px;
+  animation: fadeInUp 0.5s ease;
+}
+
+.create-session-container h2 {
+  color: var(--color-text);
+  margin-bottom: 30px;
+  font-size: 28px;
+  text-align: center;
+  position: relative;
+  padding-bottom: 12px;
+}
+
+.create-session-container h2::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--color-primary),
+    var(--color-primary-dark)
+  );
+  border-radius: 3px;
+}
+
+.create-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background-color: var(--color-bg-card);
+  border-radius: 16px;
+  box-shadow: 0 10px 25px var(--color-shadow);
+  padding: 35px 30px;
+  margin-bottom: 30px;
+  border: 1px solid var(--color-border);
+  position: relative;
+  overflow: hidden;
+}
+
+.create-form::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(
+    90deg,
+    var(--color-primary),
+    var(--color-primary-dark)
+  );
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: var(--color-text);
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+}
+
+.form-group textarea,
+.form-group input {
+  padding: 14px 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  font-size: 15px;
+  background-color: var(--color-bg-card);
+  color: var(--color-text);
+  transition: all 0.3s ease;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.form-group textarea:focus,
+.form-group input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(99, 179, 237, 0.2),
+    inset 0 1px 3px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+}
+
+.form-group textarea::placeholder,
+.form-group input::placeholder {
+  color: var(--color-subtext);
+  opacity: 0.7;
+}
+
+.password-hint {
+  font-size: 13px;
+  color: var(--color-subtext);
+  margin-top: 6px;
+  margin-left: 2px;
+  display: flex;
+  align-items: center;
+}
+
+.password-hint::before {
+  content: "💡";
+  margin-right: 6px;
+  font-size: 14px;
+}
+
+.submit-button {
+  display: inline-block;
+  margin-top: 15px;
+  padding: 14px 28px;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-primary-dark)
+  );
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  box-shadow: 0 4px 10px rgba(49, 130, 206, 0.3);
+  text-align: center;
+}
+
+.submit-button:hover:not(:disabled) {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-dark),
+    var(--color-primary)
+  );
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(49, 130, 206, 0.4);
+}
+
+.submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error-message {
+  background-color: rgba(229, 62, 62, 0.1);
+  color: var(--color-error);
+  padding: 14px 18px;
+  border-radius: 10px;
+  margin-bottom: 25px;
+  font-size: 15px;
+  border-left: 4px solid var(--color-error);
+  display: flex;
+  align-items: center;
+}
+
+.error-message::before {
+  content: "⚠️";
+  margin-right: 10px;
+  font-size: 16px;
+}
 
 .auth-buttons {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 20px;
-  gap: 10px;
+  margin-bottom: 25px;
+  gap: 12px;
 }
 
 .login-button,
 .signup-button,
 .signout-button {
-  padding: 8px 16px;
-  border-radius: 4px;
+  padding: 10px 18px;
+  border-radius: 10px;
   font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
+  transition: all 0.3s ease;
 }
 
 .login-button,
 .signup-button {
-  background-color: #f8f9fa;
-  border: 1px solid #dee2e6;
-  color: #212529;
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
 }
 
 .login-button:hover,
 .signup-button:hover {
-  background-color: #e9ecef;
+  background-color: var(--color-message-user);
   transform: translateY(-2px);
+  box-shadow: 0 4px 8px var(--color-shadow);
 }
 
 .signout-button {
-  background-color: #f8d7da;
-  border: 1px solid #f5c2c7;
-  color: #842029;
+  background-color: rgba(229, 62, 62, 0.1);
+  border: 1px solid var(--color-error);
+  color: var(--color-error);
 }
 
 .signout-button:hover {
-  background-color: #f5c2c7;
+  background-color: rgba(229, 62, 62, 0.2);
   transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(229, 62, 62, 0.15);
 }
 
 .login-required-message {
-  color: #842029;
-  margin-top: 10px;
+  color: var(--color-error);
+  margin-top: 20px;
   font-size: 14px;
   text-align: center;
+  padding: 12px;
+  background-color: rgba(229, 62, 62, 0.1);
+  border-radius: 10px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(229, 62, 62, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(229, 62, 62, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(229, 62, 62, 0);
+  }
+}
+
+/* Add responsive adjustments */
+@media (max-width: 600px) {
+  .create-form {
+    padding: 25px 20px;
+  }
+
+  .create-session-container h2 {
+    font-size: 24px;
+  }
+
+  .submit-button {
+    width: 100%;
+  }
 }

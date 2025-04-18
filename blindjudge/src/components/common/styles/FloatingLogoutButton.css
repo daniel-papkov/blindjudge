@@ -1,0 +1,30 @@
+/* src/components/auth/FloatingLogoutButton.css */
+.floating-logout-container {
+  position: fixed;
+  z-index: 100;
+}
+
+.floating-logout-top-right {
+  top: 16px;
+  right: 16px;
+}
+
+.floating-logout-top-left {
+  top: 16px;
+  left: 16px;
+}
+
+.floating-logout-bottom-right {
+  bottom: 16px;
+  right: 16px;
+}
+
+.floating-logout-bottom-left {
+  bottom: 16px;
+  left: 16px;
+}
+
+/* Add a subtle shadow effect */
+.floating-logout-container .logout-button {
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
