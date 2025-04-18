@@ -1,5 +1,5 @@
 todo :
-6. css 
+easy copy to clipboard room id buttom
 
 issues:
 1. break things into smaller components (frontend)

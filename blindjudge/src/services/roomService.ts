@@ -13,11 +13,6 @@ interface CreateRoomResponse {
   message: string;
 }
 
-interface RoomExistsResponse {
-  success: boolean;
-  exists: boolean;
-}
-
 interface ErrorWithStatus extends Error {
   status?: number;
   response?: {
@@ -53,21 +48,21 @@ export const joinRoom = async (
   }
 };
 
-export const checkRoomExists = async (roomId: string): Promise<boolean> => {
-  try {
-    const response = await api.get<RoomExistsResponse>(
-      `/rooms/${roomId}/exists`
-    );
-    return response.data.exists;
-  } catch (error) {
-    const typedError = error as ErrorWithStatus;
-    // If it's a 403 error, the user is not in the room (which means it does exist)
-    if (typedError.response?.status === 403) {
-      return true;
-    }
-    return false;
-  }
-};
+// export const checkRoomExists = async (roomId: string): Promise<boolean> => {
+//   try {
+//     const response = await api.get<RoomExistsResponse>(
+//       `/rooms/${roomId}/exists`
+//     );
+//     return response.data.exists;
+//   } catch (error) {
+//     const typedError = error as ErrorWithStatus;
+//     // If it's a 403 error, the user is not in the room (which means it does exist)
+//     if (typedError.response?.status === 403) {
+//       return true;
+//     }
+//     return false;
+//   }
+// };
 
 export const getRoomStatus = async (
   roomId: string
@@ -90,13 +85,13 @@ export const getRoomStatus = async (
   }
 };
 
-export const leaveRoom = async (roomId: string): Promise<JoinRoomResponse> => {
-  const response = await api.post<JoinRoomResponse>(
-    `/rooms/${roomId}/leave`,
-    {}
-  );
-  return response.data;
-};
+// export const leaveRoom = async (roomId: string): Promise<JoinRoomResponse> => {
+//   const response = await api.post<JoinRoomResponse>(
+//     `/rooms/${roomId}/leave`,
+//     {}
+//   );
+//   return response.data;
+// };
 
 export const createRoom = async (
   guidingQuestion: string,
@@ -112,9 +107,7 @@ export const createRoom = async (
 // Also export as a service object for new code
 export const roomService = {
   joinRoom,
-  checkRoomExists,
   getRoomStatus,
-  leaveRoom,
   createRoom,
 };
 
