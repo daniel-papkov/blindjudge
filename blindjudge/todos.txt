@@ -1,6 +1,5 @@
 todo :
-easy copy to clipboard room id buttom
+write tests
 
 issues:
-1. break things into smaller components (frontend)
 2. break things into smaller components (backend)
