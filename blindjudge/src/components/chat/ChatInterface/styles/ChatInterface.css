@@ -1,3 +1,5 @@
+/* src/components/chat/ChatInterface/styles/ChatInterface.css */
+
 :root {
   --color-bg: #f8f9fa;
   --color-bg-card: #ffffff;
@@ -24,10 +26,23 @@
   --color-purple: #ba68c8;
 }
 
+/* Container structure to match app layout */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-content {
+  flex: 1;
+  padding: 0;
+  overflow-y: auto;
+}
+
 .chat-container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: calc(100vh - 60px); /* Adjust based on your PageNav height */
   padding: 1rem;
   max-width: 1200px;
   margin: 0 auto;
@@ -63,6 +78,84 @@
 .question-display p {
   margin: 0;
   font-weight: 500;
+}
+
+/* Room info section */
+.room-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+/* Room ID section */
+.room-id-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.room-id-label {
+  font-weight: bold;
+  margin-right: 5px;
+  color: var(--color-text);
+}
+
+.room-id-value {
+  background: rgba(0, 0, 0, 0.05);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-family: monospace;
+  margin-right: 5px;
+  color: var(--color-text);
+}
+
+.copy-room-id-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.copy-room-id-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Room actions */
+.room-actions {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.share-room-button {
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--color-text);
+}
+
+.share-room-button:hover {
+  background-color: var(--color-border);
+}
+
+.copy-success,
+.share-success {
+  margin-left: 8px;
+  color: var(--color-success);
+  font-size: 12px;
+  animation: fadeOut 2s forwards;
+  animation-delay: 1.5s;
 }
 
 .room-status {
@@ -120,7 +213,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
+  min-height: 80vh;
   text-align: center;
   padding: 2rem;
 }
@@ -189,6 +282,7 @@
   border-radius: 4px;
   width: 100%;
   max-width: 400px;
+  margin: 0 auto 1rem;
 }
 
 .conclusion-success-message {
@@ -228,4 +322,37 @@
 
 .comparison-details strong {
   color: var(--color-text);
+}
+
+/* Animation for copy success message */
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Media query for responsive layout */
+@media (max-width: 768px) {
+  .room-info {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 10px;
+  }
+
+  .chat-header {
+    flex-direction: column;
+  }
+
+  .chat-header-controls {
+    margin-top: 10px;
+    width: 100%;
+  }
+
+  .room-status {
+    padding-left: 0;
+    margin-top: 8px;
+  }
 }
