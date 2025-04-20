@@ -1,2 +1,2 @@
 # blindjudge
-2 people argue, GPT decides whos it correct
+2 people argue, GPT decides who is correct
