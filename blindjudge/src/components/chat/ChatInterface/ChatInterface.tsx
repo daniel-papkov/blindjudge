@@ -395,12 +395,15 @@ const ChatInterface: React.FC = () => {
               ))}
               <div ref={messagesEndRef} />
             </div>
-            {comparisonSuccess && comparisonResult && (
+            {((comparisonSuccess && comparisonResult) ||
+              roomStatus?.finalVerdict) && (
               <div className="comparison-result">
                 <h3>Final Verdict</h3>
                 <div className="comparison-details">
                   <strong>Comparison:</strong>
-                  <p>{comparisonResult.comparison}</p>
+                  <p>
+                    {comparisonResult?.comparison || roomStatus?.finalVerdict}
+                  </p>
                 </div>
               </div>
             )}
