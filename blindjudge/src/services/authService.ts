@@ -1,51 +1,63 @@
-// src/services/auth.ts
-import axios from "axios";
+// src/services/authService.ts
+import api from "./api";
+import { User } from "../types";
 
-interface AuthResponse {
+export interface AuthResponse {
   success: boolean;
   message: string;
   token: string;
+  username?: User;
 }
 
-interface LoginData {
+export interface LoginCredentials {
   email: string;
   password: string;
+  username?: string;
 }
 
-interface SignupData {
+export interface SignupCredentials {
   username: string;
   email: string;
   password: string;
 }
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
+// Instead of relying on apiService helper, use the api instance directly
+// to avoid type incompatibility issues
 export const authService = {
-  async login(data: LoginData): Promise<AuthResponse> {
-    const response = await api.post<AuthResponse>("/auth/login", data);
+  async login(credentials: LoginCredentials): Promise<AuthResponse> {
+    const response = await api.post<AuthResponse>("/auth/login", credentials);
+
     if (response.data.token) {
       localStorage.setItem("token", response.data.token);
       // Store user email for display purposes
-      localStorage.setItem("user", JSON.stringify({ email: data.email }));
+      console.log("*****");
+      console.log(response.data);
+      console.log(credentials);
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          email: credentials.email,
+          username: response.data.username,
+        })
+      );
     }
+
     return response.data;
   },
 
-  async signup(data: SignupData): Promise<AuthResponse> {
-    const response = await api.post<AuthResponse>("/auth/signup", data);
+  async signup(credentials: SignupCredentials): Promise<AuthResponse> {
+    const response = await api.post<AuthResponse>("/auth/signup", credentials);
+
     if (response.data.token) {
       localStorage.setItem("token", response.data.token);
       // Store user email for display purposes
-      localStorage.setItem("user", JSON.stringify({ email: data.email }));
+      localStorage.setItem(
+        "user",
+        JSON.stringify({ email: credentials.email })
+      );
     }
+
     return response.data;
   },
 
@@ -56,6 +68,7 @@ export const authService = {
 
   getCurrentUser(): { email: string } | null {
     const user = localStorage.getItem("user");
+    console.log(user);
     return user ? JSON.parse(user) : null;
   },
 
@@ -78,11 +91,11 @@ export const authService = {
   },
 };
 
-// Add auth header to all requests if token exists
+// Set up interceptors for authentication
 api.interceptors.request.use(
   (config) => {
     const token = authService.getToken();
-    if (token) {
+    if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;

@@ -1,4 +1,4 @@
-// src/types/chat.ts
+// src/types/chat.types.ts
 export interface Message {
   id: string;
   content: string;
@@ -21,4 +21,8 @@ export interface ComparisonResult {
   sessionId2: string;
   result: string;
   comparedAt: Date;
+}
+
+export interface MessageRequest {
+  message: string;
 }

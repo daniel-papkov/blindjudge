@@ -1,111 +1,136 @@
 // src/services/api.ts
-import axios from "axios";
-import { authService } from "./auth";
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
-const api = axios.create({
+// Create a single axios instance for the entire app
+const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Add auth header to all requests if token exists
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+/**
+ * Add auth token to all requests
+ */
+export const setupInterceptors = (
+  getToken: () => string | null,
+  logoutFn: () => void
+): void => {
+  // Request interceptor - add auth header
+  api.interceptors.request.use(
+    (config) => {
+      const token = getToken();
+      if (token && config.headers) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    },
+    (error) => Promise.reject(error)
+  );
 
-// Add response interceptor to handle token expiration
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    // Handle 401 Unauthorized errors (token expired or invalid)
-    if (error.response && error.response.status === 401) {
-      console.log("Auth token expired or invalid");
+  // Response interceptor - handle auth errors
+  api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      // Handle 401 Unauthorized errors (token expired or invalid)
+      if (error.response?.status === 401) {
+        console.log("Auth token expired or invalid");
 
-      // Log out the user
-      authService.logout();
+        // Log out the user
+        logoutFn();
 
-      // Store the current location for redirect after login
-      const currentPath = window.location.pathname;
-      if (currentPath !== "/login") {
-        localStorage.setItem("redirectPath", currentPath);
+        // Store the current location for redirect after login
+        const currentPath = window.location.pathname;
+        if (currentPath !== "/login") {
+          localStorage.setItem("redirectPath", currentPath);
+        }
+
+        // Redirect to login page
+        window.location.href = "/login";
       }
 
-      // Redirect to login page
-      window.location.href = "/login";
+      return Promise.reject(error);
     }
+  );
+};
 
-    return Promise.reject(error);
-  }
-);
-
-export const chatService = {
-  // Room status and management
-  async getRoom(roomId: string) {
-    const response = await api.get(`/rooms/${roomId}`);
-    return response.data;
+// Type-safe API helper methods
+export const apiService = {
+  /**
+   * Make a GET request
+   */
+  async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
+    try {
+      const response: AxiosResponse<T> = await api.get<T>(url, config);
+      return response.data;
+    } catch (error) {
+      console.error(`GET request failed: ${url}`, error);
+      throw error;
+    }
   },
 
-  async getRoomStatus(roomId: string) {
-    const response = await api.get(`/rooms/${roomId}/status`);
-    return response.data.status;
+  /**
+   * Make a POST request
+   */
+  async post<T>(
+    url: string,
+    data?: Record<string, unknown> | LoginCredentials | SignupCredentials,
+    config?: AxiosRequestConfig
+  ): Promise<T> {
+    try {
+      const response: AxiosResponse<T> = await api.post<T>(url, data, config);
+      return response.data;
+    } catch (error) {
+      console.error(`POST request failed: ${url}`, error);
+      throw error;
+    }
   },
 
-  // Chat initialization and history
-  async initializeChat(roomId: string) {
-    const response = await api.post(`/rooms/${roomId}/chat/init`);
-    return response.data;
+  /**
+   * Make a PUT request
+   */
+  async put<T>(
+    url: string,
+    data?: Record<string, unknown>,
+    config?: AxiosRequestConfig
+  ): Promise<T> {
+    try {
+      const response: AxiosResponse<T> = await api.put<T>(url, data, config);
+      return response.data;
+    } catch (error) {
+      console.error(`PUT request failed: ${url}`, error);
+      throw error;
+    }
   },
 
-  async getChatHistory(roomId: string, sessionId: string) {
-    const response = await api.get(`/rooms/${roomId}/chat/history`, {
-      headers: {
-        "Session-Id": sessionId,
-      },
-    });
-    return response.data;
-  },
-
-  // Message handling
-  async sendMessage(roomId: string, message: string, sessionId: string) {
-    const response = await api.post(
-      `/rooms/${roomId}/chat/message`,
-      { message },
-      {
-        headers: {
-          "Session-Id": sessionId,
-        },
-      }
-    );
-    return response.data;
-  },
-
-  // Room joining
-  async checkRoom(roomCode: string) {
-    const response = await api.get(`/rooms/check/${roomCode}`);
-    return response.data;
-  },
-
-  async joinRoom(roomCode: string, password?: string) {
-    const response = await api.post(`/rooms/join`, { roomCode, password });
-    return response.data;
-  },
-
-  // Conclusion submission
-  async submitConclusion(roomId: string) {
-    const response = await api.post(`/rooms/${roomId}/chat/conclude`);
-    return response.data;
+  /**
+   * Make a DELETE request
+   */
+  async delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
+    try {
+      const response: AxiosResponse<T> = await api.delete<T>(url, config);
+      return response.data;
+    } catch (error) {
+      console.error(`DELETE request failed: ${url}`, error);
+      throw error;
+    }
   },
 };
 
-export default chatService;
+// Interface for auth credentials
+interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+interface SignupCredentials {
+  username: string;
+  email: string;
+  password: string;
+}
+
+// Export the axios instance for direct use if needed
+export default api;

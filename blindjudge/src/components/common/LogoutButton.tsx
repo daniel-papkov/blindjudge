@@ -1,6 +1,7 @@
-// src/components/auth/LogoutButton.tsx
+// src/components/common/LogoutButton.tsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
 import "./styles/LogoutButton.css";
 
 interface LogoutButtonProps {
@@ -15,13 +16,11 @@ const LogoutButton: React.FC<LogoutButtonProps> = ({
   withIcon = false,
 }) => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const handleLogout = () => {
-    // Clear auth token
-    localStorage.removeItem("token");
-
-    // Any other cleanup needed
-    // sessionStorage.clear();
+    // Use logout from useAuth hook
+    logout();
 
     // Redirect to login page
     navigate("/login");

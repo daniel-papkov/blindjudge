@@ -1,8 +1,7 @@
 // src/pages/Auth/Signup.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { authService } from "../../services/auth";
-import axios from "axios";
+import { useAuth } from "../../hooks/useAuth";
 import "./Auth.css";
 
 const Signup: React.FC = () => {
@@ -10,51 +9,47 @@ const Signup: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
   const navigate = useNavigate();
+  const { signup, state: authState } = useAuth();
+  const { isAuthenticated, isLoading, error: authError } = authState;
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && !isLoading) {
+      navigate("/");
+    }
+  }, [isAuthenticated, isLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    setFormError(null);
 
+    // Validation
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setFormError("Passwords do not match");
       return;
     }
 
     if (password.length < 6) {
-      setError("Password must be at least 6 characters long");
+      setFormError("Password must be at least 6 characters long");
       return;
     }
 
     if (!username.trim()) {
-      setError("Username is required");
+      setFormError("Username is required");
       return;
     }
 
-    setLoading(true);
-
     try {
-      const response = await authService.signup({
-        username,
-        email,
-        password,
-      });
-
-      if (response.success) {
-        navigate("/"); // Redirect to home page after successful signup
-      } else {
-        setError(response.message);
-      }
+      // Use the signup function from the auth context
+      await signup({ username, email, password });
+      // The useEffect will handle redirect after successful signup
     } catch (err) {
-      if (axios.isAxiosError(err) && err.response?.data?.message) {
-        setError(err.response.data.message);
-      } else {
-        setError("An error occurred during signup");
-      }
-    } finally {
-      setLoading(false);
+      console.error("Signup failed:", err);
+      // Most errors will be handled by the auth context,
+      // but we can add custom handling here if needed
     }
   };
 
@@ -63,7 +58,10 @@ const Signup: React.FC = () => {
       <div className="auth-box">
         <h2>Create an Account</h2>
 
-        {error && <div className="auth-error">{error}</div>}
+        {/* Show either form error or auth error */}
+        {(formError || authError) && (
+          <div className="auth-error">{formError || authError}</div>
+        )}
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
@@ -74,7 +72,7 @@ const Signup: React.FC = () => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              disabled={loading}
+              disabled={isLoading}
               placeholder="Choose a username"
             />
           </div>
@@ -87,7 +85,7 @@ const Signup: React.FC = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              disabled={loading}
+              disabled={isLoading}
               placeholder="Enter your email"
             />
           </div>
@@ -100,7 +98,7 @@ const Signup: React.FC = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              disabled={loading}
+              disabled={isLoading}
               placeholder="Create a password"
               minLength={6}
             />
@@ -114,14 +112,14 @@ const Signup: React.FC = () => {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              disabled={loading}
+              disabled={isLoading}
               placeholder="Confirm your password"
               minLength={6}
             />
           </div>
 
-          <button type="submit" className="auth-button" disabled={loading}>
-            {loading ? "Creating Account..." : "Sign Up"}
+          <button type="submit" className="auth-button" disabled={isLoading}>
+            {isLoading ? "Creating Account..." : "Sign Up"}
           </button>
         </form>
 

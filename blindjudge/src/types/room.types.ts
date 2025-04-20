@@ -1,4 +1,4 @@
-// src/types/room.ts
+// src/types/room.types.ts
 export interface Room {
   id: string;
   password: string;
@@ -37,4 +37,10 @@ export interface RoomStatusResponse {
     comparisonChatId?: string;
     finalVerdict?: string;
   };
+}
+
+export interface RoomParticipant {
+  userId: string;
+  username: string;
+  hasSubmitted: boolean;
 }
